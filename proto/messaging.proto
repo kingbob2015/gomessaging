@@ -4,10 +4,44 @@ package messaging;
 
 option go_package = "github.com/kingbob2015/gomessaging/proto/messagingpb";
 
-message Test {
-    string hello = 1;
+message RegisterAsClientRequest {
+    string display_name = 1;
+}
+
+message RegisterAsClientResponse {
+    string user_id = 1;
+}
+
+message ReceiveChannelRequest {
+    string user_id = 1;
+}
+
+message ReceiveChannelResponse{
+    string sender_display_name = 1;
+    string message = 2;
+}
+
+message GetClientListRequest {
+
+}
+
+message GetClientListResponse {
+    repeated string client_list = 1;
+}
+
+message SendMessageRequest {
+    string user_id = 1;
+    string receiver_display_name = 2;
+    string message = 3;
+}
+
+message SendMessageResponse {
+    
 }
 
 service MessagingService {
-
+    rpc RegisterAsClient(RegisterAsClientRequest) returns (RegisterAsClientResponse){};
+    rpc OpenReceiveChannel(ReceiveChannelRequest) returns (stream ReceiveChannelResponse){};
+    rpc GetClientList(GetClientListRequest) returns (GetClientListResponse){};
+    rpc SendMessage(SendMessageRequest) returns (SendMessageResponse){};
 }
