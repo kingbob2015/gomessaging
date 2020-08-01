@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package messaging;
+
+option go_package = "github.com/kingbob2015/gomessaging/proto/messagingpb";
+
+message Test {
+    string hello = 1;
+}
+
+service MessagingService {
+
+}
