@@ -1,27 +1,40 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net"
 	"os"
 	"os/signal"
-	"time"
 
 	"github.com/kingbob2015/gomessaging/proto/messagingpb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
-type server struct{}
+type server struct {
+	messagingpb.UnimplementedMessagingServiceServer
+}
+
+// func (*server) RegisterAsClient(context.Context, *RegisterAsClientRequest) (*RegisterAsClientResponse, error) {
+
+// }
+
+// func (*server) OpenReceiveChannel(*ReceiveChannelRequest, MessagingService_OpenReceiveChannelServer) error {
+
+// }
+
+// func (*server) GetClientList(context.Context, *GetClientListRequest) (*GetClientListResponse, error) {
+
+// }
+
+// func (*server) SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error) {
+
+// }
 
 func main() {
 	// if we crash the go code, we get the file name and line number in error message when we use log
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancel()
 
 	fmt.Println("Messaging Service Started")
 	lis, err := net.Listen("tcp", "0.0.0.0:50051")

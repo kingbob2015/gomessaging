@@ -3,7 +3,10 @@
 package messagingpb
 
 import (
+	context "context"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -14,6 +17,10 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MessagingServiceClient interface {
+	RegisterAsClient(ctx context.Context, in *RegisterAsClientRequest, opts ...grpc.CallOption) (*RegisterAsClientResponse, error)
+	OpenReceiveChannel(ctx context.Context, in *ReceiveChannelRequest, opts ...grpc.CallOption) (MessagingService_OpenReceiveChannelClient, error)
+	GetClientList(ctx context.Context, in *GetClientListRequest, opts ...grpc.CallOption) (*GetClientListResponse, error)
+	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*SendMessageResponse, error)
 }
 
 type messagingServiceClient struct {
@@ -24,10 +31,73 @@ func NewMessagingServiceClient(cc grpc.ClientConnInterface) MessagingServiceClie
 	return &messagingServiceClient{cc}
 }
 
+func (c *messagingServiceClient) RegisterAsClient(ctx context.Context, in *RegisterAsClientRequest, opts ...grpc.CallOption) (*RegisterAsClientResponse, error) {
+	out := new(RegisterAsClientResponse)
+	err := c.cc.Invoke(ctx, "/messaging.MessagingService/RegisterAsClient", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *messagingServiceClient) OpenReceiveChannel(ctx context.Context, in *ReceiveChannelRequest, opts ...grpc.CallOption) (MessagingService_OpenReceiveChannelClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_MessagingService_serviceDesc.Streams[0], "/messaging.MessagingService/OpenReceiveChannel", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &messagingServiceOpenReceiveChannelClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type MessagingService_OpenReceiveChannelClient interface {
+	Recv() (*ReceiveChannelResponse, error)
+	grpc.ClientStream
+}
+
+type messagingServiceOpenReceiveChannelClient struct {
+	grpc.ClientStream
+}
+
+func (x *messagingServiceOpenReceiveChannelClient) Recv() (*ReceiveChannelResponse, error) {
+	m := new(ReceiveChannelResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *messagingServiceClient) GetClientList(ctx context.Context, in *GetClientListRequest, opts ...grpc.CallOption) (*GetClientListResponse, error) {
+	out := new(GetClientListResponse)
+	err := c.cc.Invoke(ctx, "/messaging.MessagingService/GetClientList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *messagingServiceClient) SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*SendMessageResponse, error) {
+	out := new(SendMessageResponse)
+	err := c.cc.Invoke(ctx, "/messaging.MessagingService/SendMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MessagingServiceServer is the server API for MessagingService service.
 // All implementations must embed UnimplementedMessagingServiceServer
 // for forward compatibility
 type MessagingServiceServer interface {
+	RegisterAsClient(context.Context, *RegisterAsClientRequest) (*RegisterAsClientResponse, error)
+	OpenReceiveChannel(*ReceiveChannelRequest, MessagingService_OpenReceiveChannelServer) error
+	GetClientList(context.Context, *GetClientListRequest) (*GetClientListResponse, error)
+	SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error)
 	mustEmbedUnimplementedMessagingServiceServer()
 }
 
@@ -35,16 +105,122 @@ type MessagingServiceServer interface {
 type UnimplementedMessagingServiceServer struct {
 }
 
+func (*UnimplementedMessagingServiceServer) RegisterAsClient(context.Context, *RegisterAsClientRequest) (*RegisterAsClientResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterAsClient not implemented")
+}
+func (*UnimplementedMessagingServiceServer) OpenReceiveChannel(*ReceiveChannelRequest, MessagingService_OpenReceiveChannelServer) error {
+	return status.Errorf(codes.Unimplemented, "method OpenReceiveChannel not implemented")
+}
+func (*UnimplementedMessagingServiceServer) GetClientList(context.Context, *GetClientListRequest) (*GetClientListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetClientList not implemented")
+}
+func (*UnimplementedMessagingServiceServer) SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
+}
 func (*UnimplementedMessagingServiceServer) mustEmbedUnimplementedMessagingServiceServer() {}
 
 func RegisterMessagingServiceServer(s *grpc.Server, srv MessagingServiceServer) {
 	s.RegisterService(&_MessagingService_serviceDesc, srv)
 }
 
+func _MessagingService_RegisterAsClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterAsClientRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MessagingServiceServer).RegisterAsClient(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/messaging.MessagingService/RegisterAsClient",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MessagingServiceServer).RegisterAsClient(ctx, req.(*RegisterAsClientRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MessagingService_OpenReceiveChannel_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ReceiveChannelRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(MessagingServiceServer).OpenReceiveChannel(m, &messagingServiceOpenReceiveChannelServer{stream})
+}
+
+type MessagingService_OpenReceiveChannelServer interface {
+	Send(*ReceiveChannelResponse) error
+	grpc.ServerStream
+}
+
+type messagingServiceOpenReceiveChannelServer struct {
+	grpc.ServerStream
+}
+
+func (x *messagingServiceOpenReceiveChannelServer) Send(m *ReceiveChannelResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _MessagingService_GetClientList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetClientListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MessagingServiceServer).GetClientList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/messaging.MessagingService/GetClientList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MessagingServiceServer).GetClientList(ctx, req.(*GetClientListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MessagingService_SendMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MessagingServiceServer).SendMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/messaging.MessagingService/SendMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MessagingServiceServer).SendMessage(ctx, req.(*SendMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _MessagingService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "messaging.MessagingService",
 	HandlerType: (*MessagingServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams:     []grpc.StreamDesc{},
-	Metadata:    "messaging.proto",
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "RegisterAsClient",
+			Handler:    _MessagingService_RegisterAsClient_Handler,
+		},
+		{
+			MethodName: "GetClientList",
+			Handler:    _MessagingService_GetClientList_Handler,
+		},
+		{
+			MethodName: "SendMessage",
+			Handler:    _MessagingService_SendMessage_Handler,
+		},
+	},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "OpenReceiveChannel",
+			Handler:       _MessagingService_OpenReceiveChannel_Handler,
+			ServerStreams: true,
+		},
+	},
+	Metadata: "messaging.proto",
 }
