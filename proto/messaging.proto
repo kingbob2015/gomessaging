@@ -12,11 +12,11 @@ message RegisterAsClientResponse {
     string user_id = 1;
 }
 
-message ReceiveChannelRequest {
+message OpenReceiveChannelRequest {
     string user_id = 1;
 }
 
-message ReceiveChannelResponse{
+message OpenReceiveChannelResponse{
     string sender_display_name = 1;
     string message = 2;
 }
@@ -41,7 +41,7 @@ message SendMessageResponse {
 
 service MessagingService {
     rpc RegisterAsClient(RegisterAsClientRequest) returns (RegisterAsClientResponse){};
-    rpc OpenReceiveChannel(ReceiveChannelRequest) returns (stream ReceiveChannelResponse){};
+    rpc OpenReceiveChannel(OpenReceiveChannelRequest) returns (stream OpenReceiveChannelResponse){};
     rpc GetClientList(GetClientListRequest) returns (GetClientListResponse){};
     rpc SendMessage(SendMessageRequest) returns (SendMessageResponse){};
 }

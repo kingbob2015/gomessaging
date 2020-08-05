@@ -18,7 +18,7 @@ const _ = grpc.SupportPackageIsVersion6
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MessagingServiceClient interface {
 	RegisterAsClient(ctx context.Context, in *RegisterAsClientRequest, opts ...grpc.CallOption) (*RegisterAsClientResponse, error)
-	OpenReceiveChannel(ctx context.Context, in *ReceiveChannelRequest, opts ...grpc.CallOption) (MessagingService_OpenReceiveChannelClient, error)
+	OpenReceiveChannel(ctx context.Context, in *OpenReceiveChannelRequest, opts ...grpc.CallOption) (MessagingService_OpenReceiveChannelClient, error)
 	GetClientList(ctx context.Context, in *GetClientListRequest, opts ...grpc.CallOption) (*GetClientListResponse, error)
 	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*SendMessageResponse, error)
 }
@@ -40,7 +40,7 @@ func (c *messagingServiceClient) RegisterAsClient(ctx context.Context, in *Regis
 	return out, nil
 }
 
-func (c *messagingServiceClient) OpenReceiveChannel(ctx context.Context, in *ReceiveChannelRequest, opts ...grpc.CallOption) (MessagingService_OpenReceiveChannelClient, error) {
+func (c *messagingServiceClient) OpenReceiveChannel(ctx context.Context, in *OpenReceiveChannelRequest, opts ...grpc.CallOption) (MessagingService_OpenReceiveChannelClient, error) {
 	stream, err := c.cc.NewStream(ctx, &_MessagingService_serviceDesc.Streams[0], "/messaging.MessagingService/OpenReceiveChannel", opts...)
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func (c *messagingServiceClient) OpenReceiveChannel(ctx context.Context, in *Rec
 }
 
 type MessagingService_OpenReceiveChannelClient interface {
-	Recv() (*ReceiveChannelResponse, error)
+	Recv() (*OpenReceiveChannelResponse, error)
 	grpc.ClientStream
 }
 
@@ -64,8 +64,8 @@ type messagingServiceOpenReceiveChannelClient struct {
 	grpc.ClientStream
 }
 
-func (x *messagingServiceOpenReceiveChannelClient) Recv() (*ReceiveChannelResponse, error) {
-	m := new(ReceiveChannelResponse)
+func (x *messagingServiceOpenReceiveChannelClient) Recv() (*OpenReceiveChannelResponse, error) {
+	m := new(OpenReceiveChannelResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func (c *messagingServiceClient) SendMessage(ctx context.Context, in *SendMessag
 // for forward compatibility
 type MessagingServiceServer interface {
 	RegisterAsClient(context.Context, *RegisterAsClientRequest) (*RegisterAsClientResponse, error)
-	OpenReceiveChannel(*ReceiveChannelRequest, MessagingService_OpenReceiveChannelServer) error
+	OpenReceiveChannel(*OpenReceiveChannelRequest, MessagingService_OpenReceiveChannelServer) error
 	GetClientList(context.Context, *GetClientListRequest) (*GetClientListResponse, error)
 	SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error)
 	mustEmbedUnimplementedMessagingServiceServer()
@@ -108,7 +108,7 @@ type UnimplementedMessagingServiceServer struct {
 func (*UnimplementedMessagingServiceServer) RegisterAsClient(context.Context, *RegisterAsClientRequest) (*RegisterAsClientResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterAsClient not implemented")
 }
-func (*UnimplementedMessagingServiceServer) OpenReceiveChannel(*ReceiveChannelRequest, MessagingService_OpenReceiveChannelServer) error {
+func (*UnimplementedMessagingServiceServer) OpenReceiveChannel(*OpenReceiveChannelRequest, MessagingService_OpenReceiveChannelServer) error {
 	return status.Errorf(codes.Unimplemented, "method OpenReceiveChannel not implemented")
 }
 func (*UnimplementedMessagingServiceServer) GetClientList(context.Context, *GetClientListRequest) (*GetClientListResponse, error) {
@@ -142,7 +142,7 @@ func _MessagingService_RegisterAsClient_Handler(srv interface{}, ctx context.Con
 }
 
 func _MessagingService_OpenReceiveChannel_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(ReceiveChannelRequest)
+	m := new(OpenReceiveChannelRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
@@ -150,7 +150,7 @@ func _MessagingService_OpenReceiveChannel_Handler(srv interface{}, stream grpc.S
 }
 
 type MessagingService_OpenReceiveChannelServer interface {
-	Send(*ReceiveChannelResponse) error
+	Send(*OpenReceiveChannelResponse) error
 	grpc.ServerStream
 }
 
@@ -158,7 +158,7 @@ type messagingServiceOpenReceiveChannelServer struct {
 	grpc.ServerStream
 }
 
-func (x *messagingServiceOpenReceiveChannelServer) Send(m *ReceiveChannelResponse) error {
+func (x *messagingServiceOpenReceiveChannelServer) Send(m *OpenReceiveChannelResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 

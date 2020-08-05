@@ -61,17 +61,60 @@ func (s *server) RegisterAsClient(ctx context.Context, req *messagingpb.Register
 	}, nil
 }
 
-// func (s *server) OpenReceiveChannel(req *messagingpb.ReceiveChannelRequest, messagingpb.MessagingService_OpenReceiveChannelServer) error {
+func (s *server) OpenReceiveChannel(req *messagingpb.OpenReceiveChannelRequest, stream messagingpb.MessagingService_OpenReceiveChannelServer) error {
+	id := req.GetUserId()
+	err := s.clientList.SetClientConn(id, &stream)
+	if err != nil {
+		return status.Errorf(
+			codes.Internal,
+			fmt.Sprintf("There was an error opening the receiving connection: %v", err),
+		)
+	}
+	return nil
+}
 
-// }
+func (s *server) GetClientList(ctx context.Context, req *messagingpb.GetClientListRequest) (*messagingpb.GetClientListResponse, error) {
+	list, err := s.clientList.GetList()
+	if err != nil {
+		return nil, status.Errorf(
+			codes.Internal,
+			fmt.Sprintf("Error getting the list of users: %v", err),
+		)
+	}
+	return &messagingpb.GetClientListResponse{
+		ClientList: list,
+	}, nil
+}
 
-// func (s *server) GetClientList(context.Context, *GetClientListRequest) (*GetClientListResponse, error) {
+func (s *server) SendMessage(ctx context.Context, req *messagingpb.SendMessageRequest) (*messagingpb.SendMessageResponse, error) {
+	recID, err := s.clientList.GetUserID(req.GetReceiverDisplayName())
+	if err != nil {
+		return nil, status.Errorf(
+			codes.Internal,
+			fmt.Sprintf("Error getting receiver user id: %v", err),
+		)
+	}
 
-// }
-
-// func (s *server) SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error) {
-
-// }
+	stream, err := s.clientList.GetClientConn(recID)
+	if err != nil {
+		return nil, status.Errorf(
+			codes.Internal,
+			fmt.Sprintf("Error getting receiver user connection: %v", err),
+		)
+	}
+	dispName, err := s.clientList.GetUserName(req.GetUserId())
+	if err != nil {
+		return nil, status.Errorf(
+			codes.Internal,
+			fmt.Sprintf("Error getting sender user details: %v", err),
+		)
+	}
+	(*stream).Send(&messagingpb.OpenReceiveChannelResponse{
+		SenderDisplayName: dispName,
+		Message:           req.GetMessage(),
+	})
+	return &messagingpb.SendMessageResponse{}, nil
+}
 
 func main() {
 	// if we crash the go code, we get the file name and line number in error message when we use log
