@@ -18,6 +18,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
+//TODO: Should move all this server code into a new file
 type server struct {
 	messagingpb.UnimplementedMessagingServiceServer
 	//Going to keep the clientList here as a pointer for now and as a named field instead of embedded type
@@ -125,9 +126,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
+	defer lis.Close()
 
 	opts := []grpc.ServerOption{}
 	s := grpc.NewServer(opts...)
+	defer s.Stop()
+
 	serv := newServer()
 	messagingpb.RegisterMessagingServiceServer(s, serv)
 
@@ -146,9 +150,5 @@ func main() {
 
 	//Block until a signal is received
 	<-ch
-	fmt.Println("Stopping the server")
-	s.Stop()
-	fmt.Println("Closing the listener")
-	lis.Close()
 	fmt.Println("End of Program")
 }
