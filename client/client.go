@@ -35,7 +35,6 @@ func main() {
 	stream, err := openRecvChannel(&c, id)
 	if err != nil {
 		log.Fatalf("Failed to open receiving stream: %v", err)
-		os.Exit(1)
 	}
 
 	//Thread off to a receiving go routine
@@ -60,18 +59,16 @@ func register(c *messagingpb.MessagingServiceClient) string {
 	userName, err := in.ReadString('\n')
 	if err != nil {
 		log.Fatalf("Error reading input: %v\n", err)
-		os.Exit(1)
 	}
 	userName = trimNewLineFromReadString(userName)
 	//Register as a user
 	id, err := protocalls.RegisterAsClient(context.Background(), c, userName)
 	for err != nil {
-		log.Fatalf("Error from user creation: %v\n", err)
+		log.Printf("Error from user creation: %v\n", err)
 		fmt.Println("Please try again to set a display name: ")
 		userName, err = in.ReadString('\n')
 		if err != nil {
 			log.Fatalf("Error reading input: %v\n", err)
-			os.Exit(1)
 		}
 		userName = trimNewLineFromReadString(userName)
 		id, err = protocalls.RegisterAsClient(context.Background(), c, userName)
@@ -92,15 +89,14 @@ func receiveMessages(stream *messagingpb.MessagingService_OpenReceiveChannelClie
 		msg, err := (*stream).Recv()
 		if err == io.EOF {
 			//we've reached the end of the stream (the stream was closed)
-			log.Fatalf("Server has cut off connection: %v", err)
+			log.Printf("Server has cut off connection: %v", err)
 			break
 		}
 		if err != nil {
-			log.Fatalf("Error while reading stream: %v", err)
+			log.Printf("Error while reading stream: %v", err)
 		}
 		sender := msg.GetSenderDisplayName()
 		message := msg.GetMessage()
-		fmt.Println(message)
 		fmt.Printf("User %v has sent the following message: \n%v\n", sender, message)
 	}
 }
@@ -112,7 +108,7 @@ func userInteraction(c *messagingpb.MessagingServiceClient, id string) {
 
 		opt, err := in.ReadString('\n')
 		if err != nil {
-			log.Fatalf("Error reading input: %v\n", err)
+			log.Printf("Error reading input: %v\n", err)
 			continue
 		}
 		opt = trimNewLineFromReadString(opt)
@@ -120,7 +116,7 @@ func userInteraction(c *messagingpb.MessagingServiceClient, id string) {
 		case "1":
 			list, err := protocalls.GetClientList(context.Background(), c)
 			if err != nil {
-				log.Fatalf("Failed to get client list: %v\n", err)
+				log.Printf("Failed to get client list: %v\n", err)
 				continue
 			}
 			for _, client := range list {
@@ -129,13 +125,13 @@ func userInteraction(c *messagingpb.MessagingServiceClient, id string) {
 		case "2":
 			list, err := protocalls.GetClientList(context.Background(), c)
 			if err != nil {
-				log.Fatalf("Failed to get client list: %v\n", err)
+				log.Printf("Failed to get client list: %v\n", err)
 				continue
 			}
 			fmt.Println("Enter which user you would like to send a message to: ")
 			user, err := in.ReadString('\n')
 			if err != nil {
-				log.Fatalf("Error reading input: %v\n", err)
+				log.Printf("Error reading input: %v\n", err)
 				continue
 			}
 			user = trimNewLineFromReadString(user)
@@ -148,20 +144,20 @@ func userInteraction(c *messagingpb.MessagingServiceClient, id string) {
 				i++
 			}
 			if i == len(list) {
-				log.Fatalf("%v is not a valid user from the current user list\n", err)
+				log.Printf("%v is not a valid user from the current user list\n", err)
 				continue
 			}
 			fmt.Printf("Enter your message to send to %v\n", user)
 			msg, err := in.ReadString('\n')
 			if err != nil {
-				log.Fatalf("Error reading input: %v\n", err)
+				log.Printf("Error reading input: %v\n", err)
 				continue
 			}
 			msg = trimNewLineFromReadString(msg)
 
 			err = protocalls.SendMessage(context.Background(), c, id, user, msg)
 			if err != nil {
-				log.Fatalf("Failed to send message: %v\n", err)
+				log.Printf("Failed to send message: %v\n", err)
 				continue
 			}
 			fmt.Println("Successfully sent the message!")
