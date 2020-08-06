@@ -15,7 +15,13 @@ type ClientList struct {
 type client struct {
 	id         string
 	name       string
-	connection *messagingpb.MessagingService_OpenReceiveChannelServer
+	connection Connection
+}
+
+//Connection is a type for holding a user's connection, needed to be a struct to keep it alive
+type Connection struct {
+	Conn  *messagingpb.MessagingService_OpenReceiveChannelServer
+	Close chan bool
 }
 
 //NewClientList is a constructor for the ClientList type
@@ -85,17 +91,21 @@ func (c *ClientList) AddNewClient(name string) (string, error) {
 }
 
 //SetClientConn takes a stream that is used to send messages to a client and adds it to a user's record
-func (c ClientList) SetClientConn(id string, stream *messagingpb.MessagingService_OpenReceiveChannelServer) error {
+func (c ClientList) SetClientConn(id string, stream *messagingpb.MessagingService_OpenReceiveChannelServer) (Connection, error) {
 	if c.list == nil {
-		return errors.New("ClientList list is not initialized")
+		return Connection{}, errors.New("ClientList list is not initialized")
 	}
 	for i, cl := range c.list {
 		if cl.id == id {
-			c.list[i].connection = stream
-			return nil
+			conn := Connection{
+				Conn:  stream,
+				Close: make(chan bool),
+			}
+			c.list[i].connection = conn
+			return conn, nil
 		}
 	}
-	return errors.New("User does not exist")
+	return Connection{}, errors.New("User does not exist")
 }
 
 //GetClientConn takes a user id and returns the stream for receiving messages for that id's user
@@ -105,7 +115,7 @@ func (c ClientList) GetClientConn(id string) (*messagingpb.MessagingService_Open
 	}
 	for i, cl := range c.list {
 		if cl.id == id {
-			stream := c.list[i].connection
+			stream := c.list[i].connection.Conn
 			return stream, nil
 		}
 	}

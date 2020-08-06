@@ -64,13 +64,14 @@ func (s *server) RegisterAsClient(ctx context.Context, req *messagingpb.Register
 
 func (s *server) OpenReceiveChannel(req *messagingpb.OpenReceiveChannelRequest, stream messagingpb.MessagingService_OpenReceiveChannelServer) error {
 	id := req.GetUserId()
-	err := s.clientList.SetClientConn(id, &stream)
+	conn, err := s.clientList.SetClientConn(id, &stream)
 	if err != nil {
 		return status.Errorf(
 			codes.Internal,
 			fmt.Sprintf("There was an error opening the receiving connection: %v", err),
 		)
 	}
+	<-conn.Close
 	return nil
 }
 
